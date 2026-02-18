@@ -1,0 +1,2 @@
+pycairo
+pywin32
