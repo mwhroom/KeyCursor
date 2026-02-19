@@ -1,2 +1,3 @@
 pycairo
+pynput
 pywin32
