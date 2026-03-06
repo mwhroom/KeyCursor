@@ -1,0 +1,27 @@
+{
+  "display system": "windows",
+  "homerow": "asdfghjkl",
+  "modes": {
+    "g": "grid",
+    "f": "next_color",
+    "m": "mark",
+    "`": "goto_mark"
+  },
+  "mode config": {
+    "normal": {
+      "exit": "esc",
+      "left": "h",
+      "down": "j",
+      "up": "k",
+      "right": "l",
+      "accelerate": "a",
+      "deccelerate": "d",
+      "scroll": "s",
+      "speed": 5.0,
+      "scroll speed": 5.0,
+      "accelerate multiplier": 4.0,
+      "deccelerate multiplier": 0.25,
+      "fps": 60
+    }
+  }
+}
