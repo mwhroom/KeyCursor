@@ -6,6 +6,10 @@ class Manager:
     def move(self, x:int, y:int):
         self.controller.move(x, y)
     
+
+    def get_pos(self):
+        return self.controller.position
+
     def set_pos(self, x:int, y:int):
         self.controller.position = (x, y)
     
