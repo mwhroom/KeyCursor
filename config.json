@@ -17,8 +17,11 @@
       "accelerate": "a",
       "deccelerate": "d",
       "scroll": "s",
+      "left click": "space",
+      "right click": "alt_gr",
+      "middle click": "ctrl_r",
       "speed": 5.0,
-      "scroll speed": 5.0,
+      "scroll speed": 2.0,
       "accelerate multiplier": 4.0,
       "deccelerate multiplier": 0.25,
       "fps": 60

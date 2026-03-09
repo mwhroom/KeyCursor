@@ -26,7 +26,7 @@ class Mode:
 
             if self.holding_scroll:
                 curspeed *= self.config['scroll speed']
-                self.mousemanager.scroll(self.input_dir[0]*curspeed, self.input_dir[1]*curspeed)
+                self.mousemanager.scroll(-1*self.input_dir[0]*curspeed, self.input_dir[1]*curspeed)
             else:
                 curspeed *= self.config['speed']
                 self.mousemanager.move(self.input_dir[0]*curspeed, self.input_dir[1]*curspeed)
@@ -98,6 +98,23 @@ class Mode:
                 self.holding_scroll = False
             else:
                 self.holding_scroll = True
+
+        # Clicks
+        elif inp == self.config['left click']:
+            if released:
+                self.mousemanager.release(0)
+            else:
+                self.mousemanager.press(0)
+        elif inp == self.config['right click']:
+            if released:
+                self.mousemanager.release(1)
+            else:
+                self.mousemanager.press(1)
+        elif inp == self.config['middle click']:
+            if released:
+                self.mousemanager.release(2)
+            else:
+                self.mousemanager.press(2)
 
         # Special
         elif inp == self.config['exit']:

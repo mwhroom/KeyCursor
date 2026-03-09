@@ -35,8 +35,11 @@ def generate_default_config():
                 'accelerate':'a',
                 'deccelerate':'d',
                 'scroll':'s',
+                'left click':'space',
+                'right click':'alt_gr',
+                'middle click':'ctrl_r',
                 'speed':5.0,
-                'scroll speed':5.0,
+                'scroll speed':0.5,
                 'accelerate multiplier':4.0,
                 'deccelerate multiplier':.25,
                 'fps':60
@@ -77,7 +80,8 @@ def load_config():
         if 'normal' not in config['mode config']:
             print('"normal" mode config not defined in "mode config" in config.json')
 
-        for x in ['left', 'down', 'up', 'right', 'accelerate', 'deccelerate', 'scroll',
+        for x in ['left', 'down', 'up', 'right', 'accelerate', 'deccelerate', 'scroll', 
+                  'left click', 'right click', 'middle click',
                   'speed', 'scroll speed', 'accelerate multiplier', 'deccelerate multiplier', 'fps']:
             if x not in config['mode config']['normal']:
                 print(f'"{x}" is not defined in "normal" in "mode config".')
