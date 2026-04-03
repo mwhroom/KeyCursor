@@ -46,7 +46,7 @@ def generate_default_config():
             },
             'mark':{
                 'mark':'z',
-                'save':'a',
+                'save':'c',
                 'delete':'x',
                 'exit':'',
             },
