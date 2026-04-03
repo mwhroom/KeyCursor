@@ -43,7 +43,16 @@ def generate_default_config():
                 'accelerate multiplier':4.0,
                 'deccelerate multiplier':.25,
                 'fps':60
-            }
+            },
+            'mark':{
+                'mark':'z',
+                'save':'a',
+                'delete':'x',
+                'exit':'',
+            },
+            'goto_mark':{
+
+            },
         }
     }
 
@@ -119,16 +128,16 @@ if __name__ == "__main__":
         sys.exit()
     config['mode config']['normal']['modes'] = config['modes']
 
-    match config['display system']:
-        case 'windows':
-            mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            displaymanager = import_module('DisplayManagers.win')
-        case 'x11':
-            mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            displaymanager = import_module('DisplayManagers.x11')
-        case 'wayland':
-            mousemanager = None
-            displaymanager = import_module('DisplayManagers.wayland')
+    #match config['display system']:
+    if config['display system']=='windows':
+        mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
+            #displaymanager = import_module('DisplayManagers.win')
+        #case 'x11':
+        #    mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
+        #    displaymanager = import_module('DisplayManagers.x11')
+        #case 'wayland':
+        #    mousemanager = None
+        #    displaymanager = import_module('DisplayManagers.wayland')
 
     change_mode('normal')
     inputmanager.init(config['display system']!='wayland')
