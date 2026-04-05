@@ -40,7 +40,6 @@ class Mode:
 
     
     def take_input(self, inp: str, released: bool, held_keys: set = {}, just_pressed: bool = False):
-        print(inp, held_keys)
         # Mode switcher
         if inp in self.config['modes']:
             self.stop_thread()
