@@ -137,3 +137,28 @@ class Manager:
         win32gui.ReleaseDC(self.window_handle, self.hdc_screen)
         
         self.surface = None
+    
+if __name__ == "__main__":
+    import time
+    
+    # 1. Initialize the manager
+    print("Initializing Manager...")
+    overlay = Manager()
+    
+    # 2. Draw for 10 seconds
+    print("Drawing a test box... look at your top-left screen!")
+    end_time = time.time() + 10
+    
+    while time.time() < end_time:
+        surface = overlay.start_draw()
+        ctx = cairo.Context(surface)
+        
+        # Draw a semi-transparent blue rectangle
+        ctx.set_source_rgba(0.1, 0.5, 1.0, 0.6) # Blue with 60% opacity
+        ctx.rectangle(50, 50, 300, 200)
+        ctx.fill()
+        
+        overlay.stop_draw()
+        time.sleep(0.1) # Prevents high CPU usage during test
+
+    print("Test complete.")
