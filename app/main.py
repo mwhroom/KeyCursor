@@ -122,7 +122,7 @@ if __name__ == "__main__":
     match config['display system']:
         case 'windows':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            displaymanager = import_module('DisplayManagers.win')
+            #displaymanager = import_module('DisplayManagers.win')
         case 'x11':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
             displaymanager = import_module('DisplayManagers.x11')
