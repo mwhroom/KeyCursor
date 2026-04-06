@@ -45,10 +45,8 @@ def generate_default_config():
                 'fps':60
             },
             'mark':{
-                'mark':'z',
-                'save':'c',
-                'delete':'x',
-                'exit':'',
+                'normal':'esc',
+                'exit':''
             },
             'goto_mark':{
 
@@ -118,7 +116,7 @@ def change_mode(m: str):
     if m=='':
         sys.exit()
 
-    module = import_module('Modes.'+m)
+    module = import_module('modes.'+m)
     mode = module.Mode(config['mode config'][m], mousemanager, displaymanager, change_mode)
     inputmanager.set_reciever(mode.take_input)
 

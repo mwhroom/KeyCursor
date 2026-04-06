@@ -23,6 +23,17 @@
 #The goto_mark.py mode will take in 1 inp string, and attempt to retrieve a coordinate that was set by mark.py based on the inp string provided. If the inp string cannot be
 # found in whatever storage system you are using, the immediately exit and return to normal mode. Remember to make a normal mode case for this mode as well.
 
+#However, I took a look at the mark.py, but couldn't seem to get it to work; is it working for you?
+
+#Besides that, I think I just assumed you knew about how mark worked in vim and went with that, because it seems like I still wasn't specific enough about what mark was specifically supposed to do. 
+
+#First of all, it is impossible to interfere with other inputs, because all inputs are routed to whichever mode is currently active, so you don't have to worry about those kinds of mapping issues. 
+
+#Second, it looks like you put in a case for the 'modes' input, when in reality, that is exclusively for the normal mode; unless you add a section for it to the config, it won't appear in the mark's config dictionary. But you shouldn't need this at all because of my third comment:
+
+#Third, the mark mode should minimize the amount of button presses necessary. This means it should have as little stuff going on as possible, so we don't really need a whole section for marking, saving, and deleting. The only overhead you should have is a keybind for exiting the mark mode without marking anything and returning to normal mode, which can be esc, capslock, or whatever. All the mark mode needs to do is take 1 key, not just numbers, any key (this is the inp string I was mentioning in the overview; in the take_input() function, it is the inp argument), read the current cursor position, and update the json with this information (which means either overwrite an existing marked position, or making a new one if it does not exist).
+
+#Everything else seems great, though I wasn't really able to test it, it looks like you are reading from and writing to the json file correctly, and updating your dictionary well. Let me know if you have any questions
 # *** COMMENTS HERE FOR NOW, DELETED LATER ***
 
 import json
@@ -40,75 +51,46 @@ class Mode:
         self.name = 'mark'
         self.mousemanager = mousemanager
         self.change_mode = change_mode
-        self.i = 0
         #makes empty dict to store marks in, will be filled with mark_config.json contents
-        self.mark_config = {}
         #initializes the current position as non-existent
-        self.curPos = None
-
-    #created because its used in both save and delete
-    #more condensed, less repetitive
-    def load_logic(self, config_dir):
-        if os.path.exists(config_dir):
-            with open(config_dir, 'r') as file:
-                #loads current marks into dict
-                self.mark_config = json.load(file)
-        else:
-            #if file doesn't exist, make it
-            with open(config_dir, 'w') as file:
-                #makes empty json with formatting
-                json.dump({}, file, indent=2)
-
-    def del_position(self, config_dir, inp: int):
-        self.load_logic(config_dir)
-        if inp in self.mark_config:
-            del self.mark_config[inp]
-            #replace the space that the deleted mark was in with the next mark
-            if self.i > inp:
-                self.i-=1
-            with open(config_dir, 'w') as file:
-                json.dump(self.mark_config, file, indent=2)
-        else:
-            #in the case that here is no mark. wont go in here if
-            #the mark # is found in mark_config[inp] indexes
-            print("Mark not found, cannot delete")
-
-
-    def save_position(self, curPos, config_dir):
-
-        self.load_logic(config_dir)
-        if self.i > 9:
-            #overwrites 0 because trying to get saves mapped 0-9
-            #no keys because that would be difficult considering this is for keyboard
-            self.i = 0
-        self.mark_config[self.i] = curPos
-        #mapping 0-9
-        self.i+=1
-        #opens file
-        with open(config_dir, 'w') as file:
-            #writes to file
-            json.dump(self.mark_config, file, indent=2)
+        curPos = None
 
     def take_input(self, inp: str, released: bool, held_keys: set = {}, just_pressed: bool = False):
-        print("'Z' to mark, 'A' to save, 'X' to Delete")
-        #if there is a mode in self.config that corresponds to the inp then switch
-        if inp in self.config['modes'][inp]:
-            # Can bring it back to normal mode
-            # switches to whatever mode user wants to go to
-            self.change_mode(self.config['modes'][inp])
+        #if m released, do nothing. only mark on press not release
+        if released:
+            return
         
-        #if key mapped to delete is pressed
-        if inp == self.config['delete']:
-            print("Enter number to mark to delete")
+        #check to see if user wants to go back to normal mode. 'esc' key. if exit ''
+        if inp == self.config['normal']:
+            self.change_mode('normal')
+        elif inp == self.config['exit']:
+            self.change_mode('')
+            
+        else:
+        #marks position
+            curPos = self.mousemanager.get_pos()
+            print(f"Marking position {curPos}")
+            #initializes this dict empty incase try fails and the if/else does not execute
+            mark_config = {}
+            try:
+                #checks if path exists
+                if os.path.exists(config_dir):
+                    with open(config_dir, 'r') as file:
+                        #loads current marks into dict
+                        # overwrites empty initialized one aswell
+                        mark_config = json.load(file)
+                #if file doesnt exist yet, makes an empty one
+                else:
+                    #initializes empty mark_config file
+                    mark_config = {}
+            except:
+                print('Could not write to mark_config.json')
+            #stored in mark_config dict
+            mark_config[inp] = curPos
+            
+            #now that either open file is known to exist or empty initialized, write to it
+            with open(config_dir, 'w') as file:
+                json.dump(mark_config, file, indent=2)
 
-        if inp == self.config['mark']:
-            self.curPos = self.mousemanager.get_pos()
-
-        #once a is reached, save position
-        if inp == self.config['save']:
-            #self object needs to call function to save position in dict
-            #ensures theres a position to save
-            if self.curPos is not None:
-                self.save_position(self.curPos, config_dir)
-            else:
-                print("No position to save. Press mark key to set a position first.")
+            #automatically changes back to normal mode at the end
+            self.change_mode('normal')
