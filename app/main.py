@@ -49,7 +49,8 @@ def generate_default_config():
                 'exit':''
             },
             'goto_mark':{
-
+                'normal':'esc',
+                'exit':''
             },
         }
     }
