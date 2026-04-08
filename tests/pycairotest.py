@@ -130,7 +130,8 @@ class MyWindow:
         # Normal imp: 
         # surface = cairo.ImageSurface(cairo.FORMAT_WIN32_SURFACE, WIDTH, HEIGHT)
         # Win specific imp:
-        surface = cairo.Win32Surface(hdc) # create cairo surface
+        #surface = cairo.Win32Surface(hdc) # create cairo surface
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, screen_width, screen_height)
 
         ctx = cairo.Context(surface) # create cairo context on surface
         ctx.set_antialias(cairo.ANTIALIAS_NONE) # No antialiasing
@@ -164,7 +165,75 @@ class MyWindow:
         ctx.set_source_rgb(0.3, 0.3, 0.3)
         ctx.set_line_width(4)
         ctx.stroke()
+
+        ctx.translate(-testglobal.position[0], -testglobal.position[1])
         
+
+        keys = "asdfghjkl;'"
+        current_input = 'd'
+        len_keys = len(keys)
+        width = screen_width
+        height = screen_height
+        step_row = height//len_keys
+        step_col = width//len_keys
+
+
+        ctx.rectangle(0, 0, width, height)
+        ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0)
+        ctx.fill()
+        
+        ctx.set_source_rgb(67/255, 
+                           67/255, 
+                           67/255)
+        ctx.set_line_width(1)
+        for col in range(len_keys):
+            ctx.move_to(col*step_col, 0)
+            ctx.line_to(col*step_col, height)
+            ctx.stroke()
+        
+        if current_input != '':
+            ctx.set_source_rgb(200/255, 
+                               200/255, 
+                               30/255)
+            ctx.set_line_width(5)
+
+            highlight_pos = keys.find(current_input)
+            ctx.move_to(highlight_pos*step_col, 0)
+            ctx.line_to(highlight_pos*step_col, height)
+            ctx.stroke()
+            ctx.move_to((highlight_pos+1)*step_col, 0)
+            ctx.line_to((highlight_pos+1)*step_col, height)
+            ctx.stroke()
+
+        ctx.set_line_width(1)
+        ctx.set_font_size(50)
+        ctx.select_font_face('Arial', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+        for row in range(len_keys):
+            ctx.move_to(0, row*step_row)
+            ctx.line_to(width, row*step_row)
+            ctx.set_source_rgb(67/255, 
+                               67/255, 
+                               67/255)
+            ctx.stroke()
+
+            ctx.set_source_rgb(67/255, 
+                               67/255, 
+                               67/255)
+            for col in range(len_keys):
+                text_size = ctx.text_extents(keys[col]+keys[row])
+
+                ctx.move_to(col*step_col, row*step_row)
+                ctx.rel_move_to((step_col-text_size.width)//2, (step_row+text_size.height)//2)
+
+                ctx.show_text(keys[col] + keys[row])
+        
+
+        new_surface = cairo.Win32Surface(hdc)
+        new_ctx = cairo.Context(new_surface)
+        new_ctx.set_source_surface(surface, 0, 0)
+        new_ctx.paint()
+        new_surface.flush()
+
         # flush surface (must be done at end of every drawing)
         surface.flush()
 
