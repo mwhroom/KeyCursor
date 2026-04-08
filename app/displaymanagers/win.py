@@ -3,162 +3,109 @@ import win32api
 import win32con
 import win32gui
 import ctypes
+import time
 from ctypes import windll, Structure, byref
 
-# Define the BLENDFUNCTION structure required for Alpha Blending
-class BLENDFUNCTION(Structure):
-    _fields_ = [
-        ("BlendOp", ctypes.c_byte),
-        ("BlendFlags", ctypes.c_byte),
-        ("SourceConstantAlpha", ctypes.c_byte),
-        ("AlphaFormat", ctypes.c_byte),
-    ]
-
-# Required for creating a 32-bit (ARGB) memory buffer
-class BITMAPINFOHEADER(Structure):
-    _fields_ = [
-        ("biSize", ctypes.c_uint32),
-        ("biWidth", ctypes.c_int32),
-        ("biHeight", ctypes.c_int32),
-        ("biPlanes", ctypes.c_uint16),
-        ("biBitCount", ctypes.c_uint16),
-        ("biCompression", ctypes.c_uint32),
-        ("biSizeImage", ctypes.c_uint32),
-        ("biXPelsPerMeter", ctypes.c_int32),
-        ("biYPelsPerMeter", ctypes.c_int32),
-        ("biClrUsed", ctypes.c_uint32),
-        ("biClrImportant", ctypes.c_uint32),
-    ]
+# Ensure the process is DPI aware for your 1920x1200 resolution
+try:
+    windll.shcore.SetProcessDpiAwareness(1)
+except:
+    windll.user32.SetProcessDPIAware()
 
 class BITMAPINFO(Structure):
-    _fields_ = [("bmiHeader", BITMAPINFOHEADER), ("bmiColors", ctypes.c_uint32 * 3)]
+    _fields_ = [("biSize", ctypes.c_uint32), ("biWidth", ctypes.c_int32), ("biHeight", ctypes.c_int32),
+                ("biPlanes", ctypes.c_uint16), ("biBitCount", ctypes.c_uint16), ("biCompression", ctypes.c_uint32),
+                ("biSizeImage", ctypes.c_uint32), ("biXPelsPerMeter", ctypes.c_int32), ("biYPelsPerMeter", ctypes.c_int32),
+                ("biClrUsed", ctypes.c_uint32), ("biClrImportant", ctypes.c_uint32)]
 
 class Manager:
-    """
-    Manager for a full-screen, click-through, transparent Cairo overlay.
-    """
     def __init__(self):
-        self.screen_width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
-        self.screen_height = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
+        self.screen_width = win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN)
+        self.screen_height = win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN)
         
-        self.window_handle = None
-        self.hdc_screen = None
-        self.hdc_mem = None
-        self.hbitmap = None
-        self.surface = None
-        
+        # We'll use Magenta as our "invisible" color
+        self.key_color = win32api.RGB(255, 0, 255) 
+        self.hwnd = None
         self._create_window()
 
     def _create_window(self):
-        class_name = "CairoOverlayWindow"
+        class_name = "BruteForceOverlay"
         h_inst = win32api.GetModuleHandle(None)
         
         wnd_class = win32gui.WNDCLASS()
         wnd_class.lpfnWndProc = win32gui.DefWindowProc
         wnd_class.hInstance = h_inst
         wnd_class.lpszClassName = class_name
-        
-        try:
-            win32gui.RegisterClass(wnd_class)
-        except:
-            pass # Already registered
+        try: win32gui.RegisterClass(wnd_class)
+        except: pass
 
-        # WS_EX_LAYERED: Enables transparency
-        # WS_EX_TRANSPARENT: Makes the window click-through
-        # WS_EX_TOPMOST: Keeps it above all other windows
-        self.window_handle = win32gui.CreateWindowEx(
+        # Create a basic Popup window
+        self.hwnd = win32gui.CreateWindowEx(
             win32con.WS_EX_TOPMOST | win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT,
             class_name, "Overlay", win32con.WS_POPUP,
-            0, 0, self.screen_width, self.screen_height,
-            0, 0, h_inst, None
+            0, 0, self.screen_width, self.screen_height, 0, 0, h_inst, None
         )
+
+        # THE CRITICAL LINE: Tell Windows to punch a hole through the key_color
+        # 0x000001 is LWA_COLORKEY
+        win32gui.SetLayeredWindowAttributes(self.hwnd, self.key_color, 0, 0x000001)
         
-        win32gui.ShowWindow(self.window_handle, win32con.SW_SHOW)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_SHOW)
 
     def start_draw(self):
-        """
-        Creates a back-buffer and returns a Cairo Win32Surface.
-        """
-        # 1. Get the screen DC and create a compatible memory DC
-        self.hdc_screen = win32gui.GetDC(self.window_handle)
+        """Prepares a memory DC for Cairo to draw on."""
+        self.hdc_screen = win32gui.GetDC(self.hwnd)
         self.hdc_mem = windll.gdi32.CreateCompatibleDC(self.hdc_screen)
         
-        # 2. Define a 32-bit ARGB DIB (Device Independent Bitmap)
-        # We use a negative height to ensure the bitmap is top-down (0,0 is top-left)
-        bi = BITMAPINFO()
-        bi.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
-        bi.bmiHeader.biWidth = self.screen_width
-        bi.bmiHeader.biHeight = -self.screen_height 
-        bi.bmiHeader.biPlanes = 1
-        bi.bmiHeader.biBitCount = 32
-        bi.bmiHeader.biCompression = 0 # BI_RGB
-
-        self.hbitmap = windll.gdi32.CreateDIBSection(
-            self.hdc_mem, byref(bi), 0, byref(ctypes.c_void_p()), None, 0
-        )
-        windll.gdi32.SelectObject(self.hdc_mem, self.hbitmap)
+        # Standard 32-bit bitmap
+        bi = BITMAPINFO(40, self.screen_width, -self.screen_height, 1, 32, 0, 0, 0, 0, 0, 0)
+        self.hbmp = windll.gdi32.CreateDIBSection(self.hdc_mem, byref(bi), 0, byref(ctypes.c_void_p()), None, 0)
+        windll.gdi32.SelectObject(self.hdc_mem, self.hbmp)
         
-        # 3. Create the Cairo surface
         self.surface = cairo.Win32Surface(self.hdc_mem)
-        
-        # Clear the surface to be fully transparent initially
         ctx = cairo.Context(self.surface)
-        ctx.set_source_rgba(0, 0, 0, 0)
-        ctx.set_operator(cairo.OPERATOR_SOURCE)
+        
+        # IMPORTANT: Fill the entire background with our "Invisible Pink"
+        # Cairo uses 0.0-1.0 range. Magenta is (1.0, 0.0, 1.0)
+        ctx.set_source_rgb(1.0, 0.0, 1.0)
         ctx.paint()
         
         return self.surface
 
     def stop_draw(self):
-        """
-        Flushes drawing to the window and performs resource cleanup.
-        """
-        if not self.surface:
-            return
-
+        """Blits the memory buffer to the screen."""
         self.surface.flush()
-
-        # UpdateLayeredWindow parameters
-        # AC_SRC_ALPHA (1) tells Windows to use the alpha channel in the bitmap
-        blend = BLENDFUNCTION(0, 0, 255, 1) 
-        pt_src = ctypes.c_longlong(0) # Represents a POINT structure at (0,0)
         
-        windll.user32.UpdateLayeredWindow(
-            self.window_handle, self.hdc_screen,
-            None, None, # Use current window pos/size
-            self.hdc_mem, byref(pt_src),
-            0, byref(blend), 2 # 2 = ULW_ALPHA
-        )
+        # Copy the memory buffer to the window's real device context
+        win32gui.BitBlt(self.hdc_screen, 0, 0, self.screen_width, self.screen_height, 
+                        self.hdc_mem, 0, 0, win32con.SRCCOPY)
 
-        # Resource Cleanup
-        self.surface.finish() # Closes Cairo's handle on the DC
-        windll.gdi32.DeleteObject(self.hbitmap)
+        # Cleanup
+        self.surface.finish()
+        windll.gdi32.DeleteObject(self.hbmp)
         windll.gdi32.DeleteDC(self.hdc_mem)
-        win32gui.ReleaseDC(self.window_handle, self.hdc_screen)
+        win32gui.ReleaseDC(self.hwnd, self.hdc_screen)
         
-        self.surface = None
-    
-if __name__ == "__main__":
-    import time
-    
-    # 1. Initialize the manager
-    print("Initializing Manager...")
-    overlay = Manager()
-    
-    # 2. Draw for 10 seconds
-    print("Drawing a test box... look at your top-left screen!")
-    end_time = time.time() + 10
-    
-    while time.time() < end_time:
-        surface = overlay.start_draw()
-        ctx = cairo.Context(surface)
-        
-        # Draw a semi-transparent blue rectangle
-        ctx.set_source_rgba(0.1, 0.5, 1.0, 0.6) # Blue with 60% opacity
-        ctx.rectangle(50, 50, 300, 200)
-        ctx.fill()
-        
-        overlay.stop_draw()
-        time.sleep(0.1) # Prevents high CPU usage during test
+        # Process window messages so Windows doesn't think the app is frozen
+        win32gui.PumpWaitingMessages()
 
-    print("Test complete.")
+if __name__ == "__main__":
+    m = Manager()
+    print("Overlay active. Drawing red box...")
+    
+    try:
+        # Loop for 10 seconds
+        for i in range(100):
+            surf = m.start_draw()
+            ctx = cairo.Context(surf)
+            
+            # Draw a solid RED box in the center
+            ctx.set_source_rgb(1.0, 0.0, 0.0)
+            w, h = 200, 200
+            ctx.rectangle(m.screen_width//2 - w//2, m.screen_height//2 - h//2, w, h)
+            ctx.fill()
+            
+            m.stop_draw()
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        pass
