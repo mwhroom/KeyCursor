@@ -43,7 +43,15 @@ def generate_default_config():
                 'accelerate multiplier':4.0,
                 'deccelerate multiplier':.25,
                 'fps':60
-            }
+            },
+            'mark':{
+                'normal':'esc',
+                'exit':''
+            },
+            'goto_mark':{
+                'normal':'esc',
+                'exit':''
+            },
         }
     }
 
@@ -109,7 +117,7 @@ def change_mode(m: str):
     if m=='':
         sys.exit()
 
-    module = import_module('Modes.'+m)
+    module = import_module('modes.'+m)
     mode = module.Mode(config['mode config'][m], mousemanager, displaymanager, change_mode)
     inputmanager.set_reciever(mode.take_input)
 
