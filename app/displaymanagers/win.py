@@ -12,6 +12,7 @@ try:
 except:
     windll.user32.SetProcessDPIAware()
 
+#Tells Windows graphic system how to handle raw data of image
 class BITMAPINFO(Structure):
     _fields_ = [("biSize", ctypes.c_uint32), ("biWidth", ctypes.c_int32), ("biHeight", ctypes.c_int32),
                 ("biPlanes", ctypes.c_uint16), ("biBitCount", ctypes.c_uint16), ("biCompression", ctypes.c_uint32),
@@ -20,6 +21,7 @@ class BITMAPINFO(Structure):
 
 class Manager:
     def __init__(self):
+        #Auto-detects the full virtual screen size (handles multi-monitor setups)
         self.screen_width = win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN)
         self.screen_height = win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN)
         
@@ -29,6 +31,7 @@ class Manager:
         self._create_window()
 
     def _create_window(self):
+        # Fills out and registers a window template (WNDCLASS) so Windows knows how to build the overlay.
         class_name = "BruteForceOverlay"
         h_inst = win32api.GetModuleHandle(None)
         
@@ -46,14 +49,14 @@ class Manager:
             0, 0, self.screen_width, self.screen_height, 0, 0, h_inst, None
         )
 
-        # THE CRITICAL LINE: Tell Windows to punch a hole through the key_color
+        # Tell Windows to punch a hole through the key_color
         # 0x000001 is LWA_COLORKEY
         win32gui.SetLayeredWindowAttributes(self.hwnd, self.key_color, 0, 0x000001)
         
         win32gui.ShowWindow(self.hwnd, win32con.SW_SHOW)
 
     def start_draw(self):
-        """Prepares a memory DC for Cairo to draw on."""
+        #Prepares a memory DC for Cairo to draw on."""
         self.hdc_screen = win32gui.GetDC(self.hwnd)
         self.hdc_mem = windll.gdi32.CreateCompatibleDC(self.hdc_screen)
         
@@ -65,7 +68,7 @@ class Manager:
         self.surface = cairo.Win32Surface(self.hdc_mem)
         ctx = cairo.Context(self.surface)
         
-        # IMPORTANT: Fill the entire background with our "Invisible Pink"
+        # Fills in entire background with the "Invisible Pink"
         # Cairo uses 0.0-1.0 range. Magenta is (1.0, 0.0, 1.0)
         ctx.set_source_rgb(1.0, 0.0, 1.0)
         ctx.paint()
@@ -73,7 +76,7 @@ class Manager:
         return self.surface
 
     def stop_draw(self):
-        """Blits the memory buffer to the screen."""
+        #Ensures all pending Cairo drawing commands are written to the memory buffer before copying it to the screen.
         self.surface.flush()
         
         # Copy the memory buffer to the window's real device context
