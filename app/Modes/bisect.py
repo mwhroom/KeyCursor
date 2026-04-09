@@ -18,18 +18,21 @@ class Mode:
                 self.change_mode('normal')
                 return
 
+            curpos = self.mousemanager.get_pos()
             if inp == self.config['left']:
-                self.maxs[0] = self.mousemanager.get_pos()[0]
+                self.maxs[0] = curpos[0]
+                self.mousemanager.set_pos((self.mins[0]+self.maxs[0])//2, curpos[1])
             elif inp == self.config['down']:
-                self.mins[1] = self.mousemanager.get_pos()[1]
+                self.mins[1] = curpos[1]
+                self.mousemanager.set_pos(curpos[0], (self.mins[1]+self.maxs[1])//2)
             elif inp == self.config['up']:
-                self.maxs[1] = self.mousemanager.get_pos()[1]
+                self.maxs[1] = curpos[1]
+                self.mousemanager.set_pos(curpos[0], (self.mins[1]+self.maxs[1])//2)
             elif inp == self.config['right']:
-                self.mins[0] = self.mousemanager.get_pos()[0]
+                self.mins[0] = curpos[0]
+                self.mousemanager.set_pos((self.mins[0]+self.maxs[0])//2, curpos[1])
             else:
                 return
-            self.mousemanager.set_pos(((self.mins[0]+self.maxs[0])//2, 
-                                        (self.mins[1]+self.maxs[1])//2))
             self.draw_grid()
                     
 
@@ -43,7 +46,7 @@ class Mode:
         ctx.set_source_rgb(self.config['line color'][0]/255, 
                            self.config['line color'][1]/255, 
                            self.config['line color'][2]/255)
-        ctx.set_line_self.width(self.config['line width'])
+        ctx.set_line_width(self.config['line width'])
 
         # Draw Borders
         ctx.move_to(self.mins[0], self.mins[1])
@@ -61,3 +64,5 @@ class Mode:
         ctx.move_to(self.mins[0],  mouse_pos[1])
         ctx.line_to(self.maxs[0], mouse_pos[1])
         ctx.stroke()
+        
+        self.displaymanager.stop_draw()

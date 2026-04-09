@@ -12,6 +12,7 @@ class Mode:
 
         self.width = displaymanager.screen_width
         self.height = displaymanager.screen_height
+        self.draw_grid()
 
 
     def take_input(self, inp: str, released: bool, held_keys: set = {}, just_pressed: bool = False):
@@ -25,7 +26,8 @@ class Mode:
                     self.change_mode('normal')
             elif inp in self.config['keys']:
                 if self.made_first_input:
-                    self.goto_input(inp)
+                    self.goto_pos(inp)
+                    self.change_mode('normal')
                 else:
                     self.made_first_input = True
                     self.current_input = inp
@@ -38,12 +40,11 @@ class Mode:
         len_keys = len(self.config['keys'])
         width = self.displaymanager.screen_width
         height = self.displaymanager.screen_height
-        step_row = width//len_keys
-        step_col = height//len_keys
+        step_row = height//len_keys
+        step_col = width//len_keys
 
-        self.mousemanager.set_pos(self.config['keys'].find(self.current_input) * step_col, 
-                                  self.config['keys'].find(second_input)       * step_row)
-
+        self.mousemanager.set_pos(self.config['keys'].find(self.current_input) * step_col + step_col//2, 
+                                  self.config['keys'].find(second_input)       * step_row + step_row//2)
 
     def draw_grid(self):
         len_keys = len(self.config['keys'])
@@ -55,16 +56,11 @@ class Mode:
         ctx = cairo.Context(surface)
         ctx.set_antialias(cairo.ANTIALIAS_NONE)
 
-        # Fill background
-        ctx.rectangle(0, 0, self.width, self.height)
-        ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0)
-        ctx.fill()
-        
         # Draw vertical lines
         ctx.set_source_rgb(self.config['line color'][0]/255, 
                            self.config['line color'][1]/255, 
                            self.config['line color'][2]/255)
-        ctx.set_line_self.width(self.config['line width'])
+        ctx.set_line_width(self.config['line width'])
         for col in range(len_keys):
             ctx.move_to(col*step_col, 0)
             ctx.line_to(col*step_col, self.height)
@@ -75,7 +71,7 @@ class Mode:
             ctx.set_source_rgb(self.config['highlight line color'][0]/255, 
                                self.config['highlight line color'][1]/255, 
                                self.config['highlight line color'][2]/255)
-            ctx.set_line_self.width(self.config['highlight line width'])
+            ctx.set_line_width(self.config['highlight line width'])
 
             highlight_pos = self.config['keys'].find(self.current_input)
             ctx.move_to(highlight_pos*step_col, 0)
@@ -86,7 +82,7 @@ class Mode:
             ctx.stroke()
 
         # Set text properties
-        ctx.set_line_self.width(self.config['line width'])
+        ctx.set_line_width(self.config['line width'])
         ctx.set_font_size(self.config['font size'])
         ctx.select_font_face(self.config['font'], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
@@ -112,6 +108,5 @@ class Mode:
                 ctx.rel_move_to((step_col-text_size.width)//2, (step_row+text_size.height)//2)
 
                 ctx.show_text(text)
-        surface.flush()
         
         self.displaymanager.stop_draw()

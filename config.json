@@ -1,0 +1,75 @@
+{
+  "display system": "windows",
+  "homerow": "asdfghjkl",
+  "modes": {
+    "g": "grid",
+    "b": "bisect",
+    "m": "mark",
+    "`": "goto_mark"
+  },
+  "mode config": {
+    "normal": {
+      "exit": "esc",
+      "left": "h",
+      "down": "j",
+      "up": "k",
+      "right": "l",
+      "accelerate": "a",
+      "deccelerate": "d",
+      "scroll": "s",
+      "left click": "space",
+      "right click": "alt_gr",
+      "middle click": "ctrl_r",
+      "click and exit": "i",
+      "speed": 5.0,
+      "scroll speed": 0.5,
+      "accelerate multiplier": 4.0,
+      "deccelerate multiplier": 0.25,
+      "fps": 60
+    },
+    "mark": {
+      "normal": "esc",
+      "exit": ""
+    },
+    "goto_mark": {
+      "normal": "esc",
+      "exit": ""
+    },
+    "grid": {
+      "exit": "esc",
+      "keys": "asdfghjkl",
+      "line color": [
+        67,
+        67,
+        67
+      ],
+      "line width": 2,
+      "highlight line color": [
+        100,
+        100,
+        20
+      ],
+      "highlight line width": 4,
+      "font": "Arial",
+      "font size": 30,
+      "font color": [
+        67,
+        67,
+        67
+      ]
+    },
+    "bisect": {
+      "exit": "esc",
+      "left": "h",
+      "down": "j",
+      "up": "k",
+      "right": "l",
+      "line color": [
+        67,
+        67,
+        67
+      ],
+      "line width": 2
+    }
+  }
+}

@@ -3,7 +3,6 @@ import win32api
 import win32con
 import win32gui
 import ctypes
-import time
 from ctypes import windll, Structure, byref
 
 # Ensure the process is DPI aware for your 1920x1200 resolution
@@ -48,7 +47,7 @@ class Manager:
 
     def _create_window(self):
         # Fills out and registers a window template (WNDCLASS) so Windows knows how to build the overlay.
-        class_name = "BruteForceOverlay"
+        class_name = "KeyCursorOverlay"
         h_inst = win32api.GetModuleHandle(None)
         
         wnd_class = win32gui.WNDCLASS()
@@ -61,16 +60,30 @@ class Manager:
         # Create a basic Popup window with Topmost and Layered flags
         self.hwnd = win32gui.CreateWindowEx(
             win32con.WS_EX_TOPMOST | win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT,
-            class_name, "Overlay", win32con.WS_POPUP,
+            class_name, "KeyCursorOverlay", win32con.WS_POPUP,
             0, 0, self.screen_width, self.screen_height, 0, 0, h_inst, None
         )
         
         win32gui.ShowWindow(self.hwnd, win32con.SW_SHOW)
 
+
+    def clear_screen(self):
+        self.start_draw()
+        self.stop_draw()
+
+
+    def _clear_screen(self):
+        ctx = cairo.Context(self.surface)
+        ctx.rectangle(0, 0, self.screen_width, self.screen_height)
+        ctx.set_source_rgba(0.0, 0.0, 0.0, 0.0)
+        ctx.fill()
+
+
     def start_draw(self):
         # Prepares a memory-backed ImageSurface for Cairo to draw on.
         # ARGB32 format is required for per-pixel alpha transparency.
         self.surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.screen_width, self.screen_height)
+        self._clear_screen()
         return self.surface
 
     def stop_draw(self):
@@ -89,7 +102,7 @@ class Manager:
         # This function updates the window with the alpha-blended content directly
         # ULW_ALPHA (2) tells Windows to look at the pixel alpha values
         windll.user32.UpdateLayeredWindow(
-            self.hwnd, self.hdc_screen, None, byref(win_size), self.hdc_mem, byref(src_pos), 0, byref(blend), 2
+            self.hwnd, self.hdc_screen, None, byref(win_size), self.hdc_mem, byref(src_pos), 0, byref(blend), win32con.ULW_ALPHA
         )
 
         # Finalize the surface and process window messages
@@ -117,10 +130,9 @@ if __name__ == "__main__":
             # The background remains 100% transparent without needing a color key
             ctx.set_source_rgba(1.0, 0.0, 0.0, 0.5) 
             w, h = 200, 200
-            ctx.rectangle(m.screen_width//2 - w//2, m.screen_height//2 - h//2, w, h)
+            ctx.rectangle(m.screen_width//2 - w//2+i, m.screen_height//2 - h//2, w, h)
             ctx.fill()
             
             m.stop_draw()
-            time.sleep(0.1)
     except KeyboardInterrupt:
         print("Stopping...")

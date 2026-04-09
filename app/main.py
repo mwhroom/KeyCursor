@@ -21,7 +21,7 @@ def generate_default_config():
         'homerow':'asdfghjkl', 
         'modes':{
             'g':'grid',
-            'f':'next_color',
+            'b':'bisect',
             'm':'mark',
             '`':'goto_mark',
         }, 
@@ -38,6 +38,7 @@ def generate_default_config():
                 'left click':'space',
                 'right click':'alt_gr',
                 'middle click':'ctrl_r',
+                'click and exit':'i',
                 'speed':5.0,
                 'scroll speed':0.5,
                 'accelerate multiplier':4.0,
@@ -52,6 +53,26 @@ def generate_default_config():
                 'normal':'esc',
                 'exit':''
             },
+            'grid':{
+                'exit':'esc',
+                'keys':'asdfghjkl',
+                'line color':(67, 67, 67),
+                'line width':1,
+                'highlight line color':(100, 100, 20),
+                'highlight line width': 2,
+                'font':'Arial',
+                'font size':30,
+                'font color':(67,67,67)
+            },
+            'bisect':{
+                'exit':'esc',
+                'left':'h',
+                'down':'j',
+                'up':'k',
+                'right':'l',
+                'line color':(67, 67, 67),
+                'line width':1,
+            }
         }
     }
 
@@ -112,25 +133,28 @@ def load_config():
 
 
 def change_mode(m: str):
-    global mode
-
+    global mode, displaymanager, mousemanager
+    del mode
     if m=='':
-        sys.exit()
+        print('exiting.')
+        del displaymanager, mousemanager
+        sys.exit(0)
 
-    module = import_module('modes.'+m)
+    displaymanager.clear_screen()
+    module = import_module('Modes.'+m)
     mode = module.Mode(config['mode config'][m], mousemanager, displaymanager, change_mode)
     inputmanager.set_reciever(mode.take_input)
 
 
 if __name__ == "__main__":
     if not load_config():
-        sys.exit()
+        sys.exit(1)
     config['mode config']['normal']['modes'] = config['modes']
 
     match config['display system']:
         case 'windows':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            #displaymanager = import_module('DisplayManagers.win')
+            displaymanager = import_module('DisplayManagers.win').Manager()
         case 'x11':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
             displaymanager = import_module('DisplayManagers.x11')
