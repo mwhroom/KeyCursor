@@ -1,6 +1,7 @@
 import inputmanager
 
 from importlib import import_module
+import os
 from os import path
 import json
 import sys
@@ -17,64 +18,20 @@ config_dir = path.join(path.join(app_path, '..'), 'config.json')
 def generate_default_config():
     global config_dir
     default_config = {
-        'display system':'windows', 
-        'homerow':'asdfghjkl', 
         'modes':{
             'g':'grid',
             'b':'bisect',
             'm':'mark',
-            '`':'goto_mark',
+            "'":'goto_mark',
         }, 
-        'mode config':{
-            'normal':{
-                'exit':'esc',
-                'left':'h',
-                'down':'j',
-                'up':'k',
-                'right':'l',
-                'accelerate':'a',
-                'deccelerate':'d',
-                'scroll':'s',
-                'left click':'space',
-                'right click':'alt_gr',
-                'middle click':'ctrl_r',
-                'click and exit':'i',
-                'speed':5.0,
-                'scroll speed':0.5,
-                'accelerate multiplier':4.0,
-                'deccelerate multiplier':.25,
-                'fps':60
-            },
-            'mark':{
-                'normal':'esc',
-                'exit':''
-            },
-            'goto_mark':{
-                'normal':'esc',
-                'exit':''
-            },
-            'grid':{
-                'exit':'esc',
-                'keys':'asdfghjkl',
-                'line color':(67, 67, 67),
-                'line width':1,
-                'highlight line color':(100, 100, 20),
-                'highlight line width': 2,
-                'font':'Arial',
-                'font size':30,
-                'font color':(67,67,67)
-            },
-            'bisect':{
-                'exit':'esc',
-                'left':'h',
-                'down':'j',
-                'up':'k',
-                'right':'l',
-                'line color':(67, 67, 67),
-                'line width':1,
-            }
-        }
+        'mode config':dict()
     }
+
+    default_config['mode config']['normal'] = import_module('Modes.normal').default_config
+
+    for _key, m in default_config['modes'].items():
+        mode = import_module('Modes.'+m)
+        default_config['mode config'][m] = mode.default_config
 
     try:
         with open(config_dir, 'w') as file:
@@ -97,25 +54,14 @@ def load_config():
         with open(config_dir, 'r') as file:
             config = json.load(file)
         
-        for x in ['display system', 'mode config', 'homerow', 'modes']:
+        for x in ['mode config', 'modes']:
             if x not in config:
                 print(f'"{x}" is not defined in config.')
                 raise AttributeError
 
-        if config['display system'] not in {'windows', 'x11', 'wayland'}:
-            print('Incorrect display system: Make sure "display system" is set to "windows" or "x11" or "wayland"')
-            raise AttributeError
-
         if 'normal' not in config['mode config']:
             print('"normal" mode config not defined in "mode config" in config.json')
-
-        for x in ['left', 'down', 'up', 'right', 'accelerate', 'deccelerate', 'scroll', 
-                  'left click', 'right click', 'middle click',
-                  'speed', 'scroll speed', 'accelerate multiplier', 'deccelerate multiplier', 'fps']:
-            if x not in config['mode config']['normal']:
-                print(f'"{x}" is not defined in "normal" in "mode config".')
-                raise AttributeError
-        
+            raise AttributeError
 
     except FileNotFoundError:
         print('Config json not found. Generating new config...')
@@ -132,16 +78,28 @@ def load_config():
     return True
 
 
-def change_mode(m: str):
+def change_mode(m: str, key_used: str=''):
     global mode, displaymanager, mousemanager
-    del mode
     if m=='':
         print('exiting.')
         del displaymanager, mousemanager
         sys.exit(0)
 
     displaymanager.clear_screen()
-    module = import_module('Modes.'+m)
+
+    try:
+        module = import_module('Modes.'+m)
+    except:
+        print("Couldn't load mode", m)
+        return
+
+    del mode
+
+    for key in module.default_config.keys():
+        if key not in config['mode config'][m]:
+            config['mode config'][m][key] = module.default_config[key]
+    config['mode config'][m]['self'] = key_used
+
     mode = module.Mode(config['mode config'][m], mousemanager, displaymanager, change_mode)
     inputmanager.set_reciever(mode.take_input)
 
@@ -151,16 +109,26 @@ if __name__ == "__main__":
         sys.exit(1)
     config['mode config']['normal']['modes'] = config['modes']
 
-    match config['display system']:
-        case 'windows':
+    iswayland = False
+    match sys.platform:
+        case 'win32':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
             displaymanager = import_module('DisplayManagers.win').Manager()
-        case 'x11':
+        case 'linux':
+            session = os.getenv('XDG_SESSION_TYPE')
+            if session=='wayland':
+                iswayland = True
+                mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
+                displaymanager = import_module('DisplayManagers.wayland').Manager()
+            elif session=='x11':
+                mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
+                displaymanager = import_module('DisplayManagers.x11').Manager()
+            else:
+                print("Unknown session type.")
+                sys.exit(1)
+        case 'darwin':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            displaymanager = import_module('DisplayManagers.x11')
-        case 'wayland':
-            mousemanager = None
-            displaymanager = import_module('DisplayManagers.wayland')
+            displaymanager = import_module('DisplayManagers.macos').Manager()
 
     change_mode('normal')
-    inputmanager.init(config['display system']!='wayland')
+    inputmanager.init(not iswayland)

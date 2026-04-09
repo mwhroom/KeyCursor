@@ -2,10 +2,13 @@ import json
 import os
 from os import path
 
+default_config={
+    'normal':'esc',
+    'exit':''
+}
+
 app_path = path.dirname(path.abspath(__file__))
 config_dir = path.join(path.join(app_path, '..'), 'mark_config.json')
-
-
 
 class Mode:
     def __init__(self, config, mousemanager, _displaymanager, change_mode):

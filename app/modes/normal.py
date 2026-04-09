@@ -1,5 +1,25 @@
 from threading import Event, Thread
 
+default_config={
+    'exit':'esc',
+    'left':'h',
+    'down':'j',
+    'up':'k',
+    'right':'l',
+    'accelerate':'a',
+    'deccelerate':'d',
+    'scroll':'s',
+    'left click':'space',
+    'right click':'alt_gr',
+    'middle click':'ctrl_r',
+    'click and exit':'i',
+    'speed':5.0,
+    'scroll speed':0.5,
+    'accelerate multiplier':4.0,
+    'deccelerate multiplier':.25,
+    'fps':60
+}
+
 class Mode:
     def __init__(self, config: dict, mousemanager: object, displaymanager: object, change_mode: callable):
         self.config = config
@@ -43,7 +63,7 @@ class Mode:
         # Mode switcher
         if not released and inp in self.config['modes']:
             self.stop_thread()
-            self.change_mode(self.config['modes'][inp])
+            self.change_mode(self.config['modes'][inp], inp)
             return False
 
 

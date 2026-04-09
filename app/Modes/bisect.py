@@ -1,4 +1,15 @@
 import cairo
+
+default_config={
+    'exit':'esc',
+    'left':'h',
+    'down':'j',
+    'up':'k',
+    'right':'l',
+    'line color':(67, 67, 67),
+    'line width':1,
+}
+
 class Mode:
     def __init__(self, config: dict, mousemanager: object, displaymanager: object, change_mode: callable):
         self.config = config
@@ -7,6 +18,7 @@ class Mode:
         self.name = 'Bisect'
         self.change_mode = change_mode
         
+        self.held_mode = False
         self.mins = [0, 0]
         self.maxs = [self.displaymanager.screen_width, self.displaymanager.screen_height]
         self.draw_grid()
@@ -33,7 +45,12 @@ class Mode:
                 self.mousemanager.set_pos((self.mins[0]+self.maxs[0])//2, curpos[1])
             else:
                 return
+            self.held_mode = True
             self.draw_grid()
+        else:
+            if self.held_mode and inp==self.config['self']:
+                self.change_mode('normal')
+                return
                     
 
     def draw_grid(self):

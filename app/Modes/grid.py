@@ -1,4 +1,17 @@
 import cairo
+
+default_config={
+    'exit':'esc',
+    'keys':'asdfghjkl',
+    'line color':(67, 67, 67),
+    'line width':1,
+    'highlight line color':(100, 100, 20),
+    'highlight line width': 2,
+    'font':'Arial',
+    'font size':30,
+    'font color':(67,67,67)
+}
+
 class Mode:
     def __init__(self, config: dict, mousemanager: object, displaymanager: object, change_mode: callable):
         self.config = config

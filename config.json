@@ -1,11 +1,9 @@
 {
-  "display system": "windows",
-  "homerow": "asdfghjkl",
   "modes": {
     "g": "grid",
     "b": "bisect",
     "m": "mark",
-    "`": "goto_mark"
+    "'": "goto_mark"
   },
   "mode config": {
     "normal": {
@@ -21,19 +19,11 @@
       "right click": "alt_gr",
       "middle click": "ctrl_r",
       "click and exit": "i",
-      "speed": 5.0,
       "scroll speed": 0.5,
+      "speed":5.0,
       "accelerate multiplier": 4.0,
       "deccelerate multiplier": 0.25,
       "fps": 60
-    },
-    "mark": {
-      "normal": "esc",
-      "exit": ""
-    },
-    "goto_mark": {
-      "normal": "esc",
-      "exit": ""
     },
     "grid": {
       "exit": "esc",
@@ -43,20 +33,21 @@
         67,
         67
       ],
-      "line width": 2,
+      "line width": 1,
       "highlight line color": [
         100,
         100,
         20
       ],
-      "highlight line width": 4,
+      "highlight line width": 2,
       "font": "Arial",
       "font size": 30,
       "font color": [
         67,
         67,
         67
-      ]
+      ],
+      "self": "g"
     },
     "bisect": {
       "exit": "esc",
@@ -69,7 +60,18 @@
         67,
         67
       ],
-      "line width": 2
+      "line width": 1,
+      "self": "b"
+    },
+    "mark": {
+      "normal": "esc",
+      "exit": "",
+      "self": "m"
+    },
+    "goto_mark": {
+      "normal": "esc",
+      "exit": "",
+      "self": "'"
     }
   }
 }

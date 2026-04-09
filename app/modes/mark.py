@@ -2,6 +2,11 @@ import json
 import os
 from os import path
 
+default_config={
+    'normal':'esc',
+    'exit':''
+}
+
 #stores absolute path to app folder
 app_path = path.dirname(path.abspath(__file__))
 #outside of app folder stores mark_config.json. goes to parent to look for it
