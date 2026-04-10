@@ -1,5 +1,4 @@
 import inputmanager
-
 from importlib import import_module
 import os
 from os import path
