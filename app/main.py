@@ -89,7 +89,7 @@ def change_mode(m: str, key_used: str=''):
     displaymanager.clear_screen()
 
     try:
-        module = import_module('modes.'+m)
+        module = import_module('Modes.'+m)
     except:
         print("Couldn't load mode", m)
         return
