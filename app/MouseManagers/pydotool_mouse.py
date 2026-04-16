@@ -1,4 +1,5 @@
 import pydotool
+from pydotool import ClickEnum as ce
 pydotool.init()
 
 class Manager:
@@ -31,18 +32,18 @@ class Manager:
 
     # button = 0: left, 1: right, 2: middle
     def click(self, button:int, count:int=1):
-        pydotool.click_sequence([button|pydotool.DOWN, 
-                                 button|pydotool.UP] * count)
+        pydotool.click_sequence([button|ce.MOUSE_DOWN, 
+                                 button|ce.MOUSE_UP] * count)
 
 
     # button = 0: left, 1: right, 2: middle
     def press(self, button:int):
-        pydotool.click_sequence(button|pydotool.DOWN)
+        pydotool.click_sequence(button|ce.MOUSE_DOWN)
 
 
     # button = 0: left, 1: right, 2: middle
     def release(self, button:int):
-        pydotool.click_sequence(button|pydotool.UP)
+        pydotool.click_sequence(button|ce.MOUSE_UP)
     
 if __name__=='__main__':
     from time import sleep
