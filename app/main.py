@@ -4,6 +4,7 @@ import os
 from os import path
 import json
 import sys
+import threading
 
 config = {}
 mousemanager = None
@@ -84,6 +85,7 @@ def change_mode(m: str, key_used: str=''):
         print('exiting.')
         del displaymanager, mousemanager
         inputmanager.stop = True
+        threading.Thread(target=inputmanager.listener_thread.stop).start()
         sys.exit(0)
 
     displaymanager.clear_screen()
@@ -138,4 +140,4 @@ if __name__ == "__main__":
 
     change_mode('normal')
     inputmanager.init()
-    print('got out of input manager thread')
+    inputmanager.listener_thread.join()
