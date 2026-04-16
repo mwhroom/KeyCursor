@@ -14,21 +14,20 @@ from pynput.keyboard import Listener, Key, KeyCode
 
 input_func: callable
 held_keys = set()
-
+listener_thread = None
 
 def init():
-    global iswayland
+    global iswayland, listener_thread
     if iswayland:
         import glob
         p = glob.glob('/dev/input/by-id/*-kbd') + glob.glob('/dev/input/by-id/*-event-kbd')
-        with Listener(on_press=press, on_release=release, 
-                      uinput_device_paths=(p if p else glob.glob('/dev/input/event*')),
-                      suppress=True) as listener:
-            listener.join()
+        i = p if p else glob.glob('/dev/input/by-path/*-kbd') + glob.glob('/dev/input/by-path/*-event-kbd')
+        listener_thread = Listener(on_press=press, on_release=release, 
+                      uinput_device_paths=(i if i else glob.glob('/dev/input/event*')),
+                      suppress=True)
     else:
-        with Listener(on_press=press, on_release=release, suppress=True) as listener:
-            listener.join()
-    print('exited key listener.')
+        listener_thread = Listener(on_press=press, on_release=release, suppress=True)
+    listener_thread.start()
 
 
 def set_reciever(inp_func: callable):
