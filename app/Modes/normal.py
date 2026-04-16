@@ -45,7 +45,7 @@ class Mode:
                         (self.config['deccelerate multiplier'] if self.holding_deccel else 1))
 
             if self.holding_scroll:
-                curspeed *= self.config['scroll speed']
+                curspeed *= self.config['speed'] * self.config['scroll speed']
                 self.mousemanager.scroll(int(self.input_dir[0]*curspeed), int(-1*self.input_dir[1]*curspeed))
             else:
                 curspeed *= self.config['speed']
