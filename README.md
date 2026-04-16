@@ -51,6 +51,7 @@ Easy to make your own modes! Check docs/ (coming soon) for more details.
 pip install -r requirements.txt
 
 If on Linux, install gtk and also call: pip install pygobject
+
 If on Wayland, install ydotool and also call: pip install python-ydotool
 - You'll need the ydotool daemon running in the background for this. (sudo ydotoold)
 
