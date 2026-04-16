@@ -46,10 +46,10 @@ class Mode:
 
             if self.holding_scroll:
                 curspeed *= self.config['scroll speed']
-                self.mousemanager.scroll(self.input_dir[0]*curspeed, -1*self.input_dir[1]*curspeed)
+                self.mousemanager.scroll(int(self.input_dir[0]*curspeed), int(-1*self.input_dir[1]*curspeed))
             else:
                 curspeed *= self.config['speed']
-                self.mousemanager.move(self.input_dir[0]*curspeed, self.input_dir[1]*curspeed)
+                self.mousemanager.move(int(self.input_dir[0]*curspeed), int(self.input_dir[1]*curspeed))
             
             self.main_thread_stopper.wait(interval)
     
@@ -60,12 +60,12 @@ class Mode:
 
     
     def take_input(self, inp: str, released: bool, held_keys: set = {}, just_pressed: bool = False):
+        print(inp, held_keys)
         # Mode switcher
         if not released and inp in self.config['modes']:
             self.stop_thread()
             self.change_mode(self.config['modes'][inp], inp)
             return False
-
 
         # Directions
         if inp == self.config['left']:

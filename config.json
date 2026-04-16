@@ -23,7 +23,7 @@
       "speed":5.0,
       "accelerate multiplier": 4.0,
       "deccelerate multiplier": 0.25,
-      "fps": 60
+      "fps": 30
     },
     "grid": {
       "exit": "esc",

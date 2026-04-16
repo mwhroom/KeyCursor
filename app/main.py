@@ -9,6 +9,7 @@ config = {}
 mousemanager = None
 displaymanager = None
 mode = None
+iswayland = False
 
 app_path = path.dirname(path.abspath(__file__))
 config_dir = path.join(path.join(app_path, '..'), 'config.json')
@@ -82,6 +83,7 @@ def change_mode(m: str, key_used: str=''):
     if m=='':
         print('exiting.')
         del displaymanager, mousemanager
+        inputmanager.stop = True
         sys.exit(0)
 
     displaymanager.clear_screen()
@@ -93,6 +95,12 @@ def change_mode(m: str, key_used: str=''):
         return
 
     del mode
+
+    if iswayland:
+        if m=='normal':
+            displaymanager.go_to_bottom()
+        else:
+            displaymanager.go_to_top()
 
     for key in module.default_config.keys():
         if key not in config['mode config'][m]:
@@ -108,7 +116,6 @@ if __name__ == "__main__":
         sys.exit(1)
     config['mode config']['normal']['modes'] = config['modes']
 
-    iswayland = False
     match sys.platform:
         case 'win32':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
@@ -116,18 +123,19 @@ if __name__ == "__main__":
         case 'linux':
             session = os.getenv('XDG_SESSION_TYPE')
             if session=='wayland':
+                displaymanager = import_module('DisplayManagers.gtk_backend').Manager()
+                mousemanager = import_module('MouseManagers.pydotool_mouse').Manager(displaymanager)
                 iswayland = True
-                mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-                displaymanager = import_module('DisplayManagers.wayland').Manager()
             elif session=='x11':
                 mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-                displaymanager = import_module('DisplayManagers.x11').Manager()
+                displaymanager = import_module('DisplayManagers.gtk_backend').Manager()
             else:
-                print("Unknown session type.")
+                print("Unknown session type:", session)
                 sys.exit(1)
         case 'darwin':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            displaymanager = import_module('DisplayManagers.macos').Manager()
+            displaymanager = import_module('DisplayManagers.gtk_backend').Manager()
 
     change_mode('normal')
-    inputmanager.init(not iswayland)
+    inputmanager.init()
+    print('got out of input manager thread')

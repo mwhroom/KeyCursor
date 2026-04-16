@@ -1,12 +1,34 @@
+import os
+
+iswayland = False
+stop = False
+
+match os.getenv('XDG_SESSION_TYPE', 'unknown'):
+    case 'wayland':
+        iswayland = True
+        os.environ['PYNPUT_BACKEND_KEYBOARD'] = 'uinput'
+        os.environ['PYNPUT_BACKEND_MOUSE'] = 'dummy'
+
 from pynput.keyboard import Listener, Key, KeyCode
+
 
 input_func: callable
 held_keys = set()
 
 
-def init(suppression: bool):
-    with Listener(on_press=press, on_release=release, suppress=suppression) as listener:
-        listener.join()
+def init():
+    global iswayland
+    if iswayland:
+        import glob
+        p = glob.glob('/dev/input/by-id/*-kbd') + glob.glob('/dev/input/by-id/*-event-kbd')
+        with Listener(on_press=press, on_release=release, 
+                      uinput_device_paths=(p if p else glob.glob('/dev/input/event*')),
+                      suppress=True) as listener:
+            listener.join()
+    else:
+        with Listener(on_press=press, on_release=release, suppress=True) as listener:
+            listener.join()
+    print('exited key listener.')
 
 
 def set_reciever(inp_func: callable):
@@ -15,30 +37,36 @@ def set_reciever(inp_func: callable):
 
 
 def press(key):
-    new_input(key, False)
+    return new_input(key, False)
 
 
 def release(key):
-    new_input(key, True)
+    return new_input(key, True)
 
 
 def new_input(key, released):
+    global stop
+    if stop:
+        return False
     global input_func, held_keys
-    inp: str
+    inp = ''
 
     if type(key)==Key:
         inp = str(key)[4:]
     elif type(key)==KeyCode:
         inp = key.char
     
-    if released:
-        if inp in held_keys:
-            held_keys.remove(inp)
-        input_func(inp, True, held_keys)
-    else:
-        if inp in held_keys:
-            input_func(inp, False, held_keys, True)
+    if inp!='':
+        if released:
+            if inp in held_keys:
+                held_keys.remove(inp)
+            input_func(inp, True, held_keys)
         else:
-            input_func(inp, False, held_keys)
-        held_keys.add(inp)
+            if inp in held_keys:
+                input_func(inp, False, held_keys, True)
+            else:
+                input_func(inp, False, held_keys)
+            held_keys.add(inp)
+
+    return True
     
