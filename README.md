@@ -54,5 +54,11 @@ If on Linux, install gtk and also call: pip install pygobject
 
 If on Wayland, install ydotool and also call: pip install python-ydotool
 - You'll need the ydotool daemon running in the background for this. (sudo ydotoold)
+- Make sure your environment variable for XDG_SESSION_TYPE is wayland.
+- Run the python file as "sudo -E your/venv/python/interpreter app/main.py"
+  - Binding to a global hotkey has not been tested yet, in favor of finishing stability first.
 
-This was made for Project Launch, from Knight Hacks.
+---
+### This was made for Project Launch, from Knight Hacks.
+
+Devpost: https://devpost.com/software/keycursor 
