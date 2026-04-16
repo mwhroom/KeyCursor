@@ -5,6 +5,10 @@ Full control over your mouse with your keyboard.
 
 Currently supports:
 - Windows
+- MacOS
+- Linux
+  - X11 (not tested)
+  - Wayland (limited & buggy)
 
 ## Features
 Different modes to enhance your mouse movement.
@@ -46,4 +50,8 @@ Easy to make your own modes! Check docs/ (coming soon) for more details.
 ## Install Requirements
 pip install -r requirements.txt
 
-This is being made for Project Launch, from Knight Hacks.
+If on Linux, install gtk and also call: pip install pygobject
+If on Wayland, install ydotool and also call: pip install python-ydotool
+- You'll need the ydotool daemon running in the background for this. (sudo ydotoold)
+
+This was made for Project Launch, from Knight Hacks.
