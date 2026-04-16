@@ -1,3 +1,6 @@
 pycairo
 pynput
 pywin32; sys_platform == "win32"
+# sys_platform == "darwin" means only install these on mac os
+pyobjc-framework-Cocoa; sys_platform == "darwin"
+pyobjc-framework-Quartz; sys_platform == "darwin"

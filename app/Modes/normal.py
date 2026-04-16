@@ -33,7 +33,7 @@ class Mode:
         self.holding_scroll = False
 
         self.main_thread_stopper = Event()
-        self.main_thread = Thread(target = self.main_loop)
+        self.main_thread = Thread(target = self.main_loop, daemon=True)
         self.main_thread.start()
     
 

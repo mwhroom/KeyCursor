@@ -30,7 +30,7 @@ def generate_default_config():
     default_config['mode config']['normal'] = import_module('Modes.normal').default_config
 
     for _key, m in default_config['modes'].items():
-        mode = import_module('Modes.'+m)
+        mode = import_module('modes.'+m)
         default_config['mode config'][m] = mode.default_config
 
     try:
@@ -89,7 +89,7 @@ def change_mode(m: str, key_used: str=''):
     displaymanager.clear_screen()
 
     try:
-        module = import_module('Modes.'+m)
+        module = import_module('modes.'+m)
     except:
         print("Couldn't load mode", m)
         return
@@ -134,7 +134,7 @@ if __name__ == "__main__":
                 sys.exit(1)
         case 'darwin':
             mousemanager = import_module('MouseManagers.pynput_mouse').Manager()
-            displaymanager = import_module('DisplayManagers.gtk_backend').Manager()
+            displaymanager = import_module('DisplayManagers.macos').Manager()
 
     change_mode('normal')
     inputmanager.init()
